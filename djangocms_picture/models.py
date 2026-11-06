@@ -343,14 +343,15 @@ class AbstractPicture(CMSPlugin):
             return getattr(settings, 'DJANGOCMS_PICTURE_RESPONSIVE_IMAGES', False)
         return self.use_responsive_image == 'yes'
 
-    @property
-    def img_srcset_data(self):
+    def get_img_srcset_data(self, picture_options=None):
         if not (self.picture and self.is_responsive_image):
             return None
 
         srcset = []
         thumbnailer = get_thumbnailer(self.picture)
-        picture_options = self.get_size(self.width, self.height)
+        if picture_options is None:
+            picture_options = self.get_size(self.width, self.height)
+
         picture_width = picture_options['size'][0]
         thumbnail_options = {'crop': picture_options['crop']}
         breakpoints = getattr(
@@ -366,7 +367,10 @@ class AbstractPicture(CMSPlugin):
         return srcset
 
     @property
-    def img_src(self):
+    def img_srcset_data(self):
+        return self.get_img_srcset_data()
+
+    def get_img_src(self, picture_options=None):
         # we want the external picture to take priority by design
         # please open a ticket if you disagree for an open discussion
         if self.external_picture:
@@ -379,10 +383,11 @@ class AbstractPicture(CMSPlugin):
         elif self.use_no_cropping:
             return self.picture.url
 
-        picture_options = self.get_size(
-            width=self.width or 0,
-            height=self.height or 0,
-        )
+        if picture_options is None:
+            picture_options = self.get_size(
+                width=self.width or 0,
+                height=self.height or 0,
+            )
 
         thumbnail_options = {
             'size': picture_options['size'],
@@ -393,6 +398,10 @@ class AbstractPicture(CMSPlugin):
 
         thumbnailer = get_thumbnailer(self.picture)
         return thumbnailer.get_thumbnail(thumbnail_options).url
+
+    @property
+    def img_src(self):
+        return self.get_img_src()
 
 
 class Picture(AbstractPicture):

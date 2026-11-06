@@ -216,6 +216,13 @@ class PictureModelTestCase(TestCase):
         instance.external_picture = self.external_picture
         self.assertIsNone(instance.img_srcset_data)
 
+    def test_get_img_srcset_data_with_picture_options(self):
+        picture_options = {'size': (1200, 800), 'crop': False, 'upscale': False}
+        instance = self.picture
+        srcset = instance.get_img_srcset_data(picture_options)
+        self.assertEqual([size for size, _ in srcset], [576, 768, 992])
+        self.assertTrue(all(isinstance(thumbnail, ThumbnailFile) for _, thumbnail in srcset))
+
     def test_img_src(self):
         instance = self.picture
         # thumbnail is generated
@@ -233,3 +240,8 @@ class PictureModelTestCase(TestCase):
         self.assertEqual(instance.img_src, "")
         instance.external_picture = self.external_picture
         self.assertEqual(instance.img_src, self.external_picture)
+
+    def test_get_img_src_with_picture_options(self):
+        picture_options = {'size': (1200, 800), 'crop': False, 'upscale': False}
+        instance = self.picture
+        self.assertIn("1200x800", instance.get_img_src(picture_options))
