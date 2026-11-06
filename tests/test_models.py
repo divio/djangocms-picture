@@ -219,10 +219,9 @@ class PictureModelTestCase(TestCase):
     def test_get_img_srcset_data_with_picture_options(self):
         picture_options = {'size': (1200, 800), 'crop': False, 'upscale': False}
         instance = self.picture
-        self.assertIsInstance(
-            instance.get_img_srcset_data(picture_options)[0][1],
-            ThumbnailFile,
-        )
+        srcset = instance.get_img_srcset_data(picture_options)
+        self.assertEqual([size for size, _ in srcset], [576, 768, 992])
+        self.assertTrue(all(isinstance(thumbnail, ThumbnailFile) for _, thumbnail in srcset))
 
     def test_img_src(self):
         instance = self.picture
